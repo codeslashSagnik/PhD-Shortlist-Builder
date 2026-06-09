@@ -1,0 +1,52 @@
+# ── Secrets ───────────────────────────────────────────────────────────────────
+.env
+
+# ── Python ────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# ── Virtual environments ──────────────────────────────────────────────────────
+venv/
+.venv/
+env/
+ENV/
+
+# ── Cache and runtime outputs ─────────────────────────────────────────────────
+cache/openalex/
+cache/semantic/
+cache/nih/
+cache/scrape/
+cache/llm/
+cache/findaphd/
+# Keep the cache directory itself (has .gitkeep)
+!cache/.gitkeep
+
+# ── Log files ─────────────────────────────────────────────────────────────────
+logs/*.log
+# Keep the logs directory itself
+!logs/.gitkeep
+
+# ── Generated output ──────────────────────────────────────────────────────────
+sample_output/*.json
+# Keep the output directory itself
+!sample_output/.gitkeep
+
+# ── IDE ───────────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# ── HuggingFace model cache (sentence-transformers downloads here) ─────────────
+# These are large and re-downloadable — don't commit
+*.bin
+*.safetensors

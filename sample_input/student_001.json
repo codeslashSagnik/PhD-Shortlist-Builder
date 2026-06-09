@@ -1,0 +1,76 @@
+{
+  "student_id": "student_001",
+  "personal": {
+    "name": "Priya Sharma",
+    "nationality": "Indian",
+    "current_degree": "BTech Computer Science",
+    "current_institution": "IIT Bombay",
+    "gpa": 8.7,
+    "level_applying_for": "PhD",
+    "student_level": "Bachelors"
+  },
+  "target": {
+    "countries": ["UK", "Canada"],
+    "intake": {
+      "semester": "Fall",
+      "year": 2025
+    },
+    "funding_required": true,
+    "open_to_self_funded": false
+  },
+  "research": {
+    "thesis_topic": "Leveraging large language models for early detection of depression and anxiety through social media text analysis",
+    "keywords": [
+      "natural language processing",
+      "mental health",
+      "affective computing",
+      "depression detection",
+      "social media analysis",
+      "large language models",
+      "sentiment analysis",
+      "clinical NLP"
+    ],
+    "primary_area": "NLP / Computational Linguistics",
+    "secondary_area": "Mental Health Informatics",
+    "discipline": "Computer Science"
+  },
+  "academic_background": {
+    "publications": [
+      {
+        "title": "Mental Health Signal Detection in Reddit Posts Using BERT Fine-tuning",
+        "venue": "ACL Student Research Workshop 2024",
+        "year": 2024,
+        "doi": "10.18653/v1/2024.acl-srw.12"
+      }
+    ],
+    "projects": [
+      {
+        "name": "SuicideWatch-NLP",
+        "description": "Fine-tuned RoBERTa on r/SuicideWatch posts to classify severity of mental distress. Achieved 0.87 F1. Used SHAP for explainability.",
+        "year": 2023
+      },
+      {
+        "name": "Multimodal Emotion Recognition",
+        "description": "Combined text + audio features using a cross-attention transformer to detect emotional states in therapy session transcripts.",
+        "year": 2024
+      }
+    ],
+    "relevant_coursework": [
+      "Deep Learning",
+      "Natural Language Processing",
+      "Computational Linguistics",
+      "Human-Computer Interaction",
+      "Ethics in AI"
+    ],
+    "test_scores": {
+      "GRE": {
+        "verbal": 162,
+        "quant": 167,
+        "awa": 4.5
+      },
+      "IELTS": 7.5
+    }
+  },
+  "intro_call_notes": "Priya is very focused on mental health NLP. She specifically wants a supervisor who works on affective computing or clinical NLP with LLMs. She is open to interdisciplinary labs that collaborate with psychology or psychiatry departments. She is NOT interested in pure linguistics or computational social science without a health angle. She prefers smaller lab sizes where she can work closely with the supervisor. She is keen on Canadian universities due to potential PR pathway. UK is also fine. She has already read papers by Stevie Chancellor (UMD), Tim Althoff (UW), and Glen Coppersmith. She found Coppersmith's work the most exciting. She is realistic about funding — needs a fully funded position with TA or RA. She does NOT want to take on debt. Timeline: apply this cycle (deadline Dec 2024 - Jan 2025).",
+  "resume_text": "Priya Sharma | priya.sharma@iitb.ac.in | linkedin.com/in/priyasharma-nlp\n\nEDUCATION\nB.Tech Computer Science, IIT Bombay, 2021-2025, CGPA: 8.7/10\n\nRESEARCH EXPERIENCE\nUndergraduate Research Assistant, NLP Lab, IIT Bombay (Jan 2023 - Present)\nSupervisor: Prof. Ganesh Ramakrishnan\n- Developed BERT-based models for mental health signal detection in online forums\n- Published at ACL Student Research Workshop 2024\n- Implemented data augmentation pipeline for low-resource mental health datasets\n\nResearch Intern, Microsoft Research India (May 2024 - July 2024)\n- Worked on LLM evaluation for clinical text understanding tasks\n- Built automated evaluation pipeline for mental health chatbot responses using GPT-4\n\nPROJECTS\nSuicideWatch-NLP (2023): Fine-tuned RoBERTa on crisis text data. 0.87 F1 on held-out set.\nMultimodal Emotion Recognition (2024): Cross-attention transformer for therapy transcripts. Presented at IIT Bombay Tech Fest.\n\nSKILLS\nLanguages: Python, PyTorch, HuggingFace Transformers, spaCy, NLTK\nTools: Weights & Biases, SHAP, Gradio, FastAPI\nAPIs: OpenAI, Anthropic, Google AI\n\nAWARDS\nInstitute Academic Prize, IIT Bombay (Top 5% of batch), 2023\nBest Paper, IIT Bombay CSE Symposium, 2024"
+}

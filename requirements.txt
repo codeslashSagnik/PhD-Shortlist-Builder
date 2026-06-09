@@ -1,0 +1,17 @@
+# Core HTTP + scraping
+requests==2.31.0
+beautifulsoup4==4.12.3
+lxml==5.1.0
+
+# Google Gemini (free tier)
+google-generativeai==0.5.4
+
+# Local embeddings — no API key needed
+sentence-transformers==2.7.0
+numpy==1.26.4
+
+# Environment variable loading
+python-dotenv==1.0.1
+
+# Optional: Faster HTML parsing
+html5lib==1.1
