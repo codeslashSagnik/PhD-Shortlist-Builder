@@ -52,7 +52,16 @@ class GenerativeModel:
         # Retry loop with Retry-After header support
         max_retries = 5
         for attempt in range(max_retries):
-            resp = requests.post(url, headers=headers, json=data, timeout=60)
+            try:
+                # 30s connect timeout, 30s read timeout
+                resp = requests.post(url, headers=headers, json=data, timeout=(30, 30))
+            except requests.exceptions.RequestException as e:
+                log.warning(f"OpenRouter connection error (attempt {attempt + 1}/{max_retries}): {e}")
+                if attempt < max_retries - 1:
+                    time.sleep(5)
+                    continue
+                else:
+                    raise ResourceExhausted(f"OpenRouter API unreachable after {max_retries} retries: {e}")
             
             if resp.status_code == 200:
                 result = resp.json()
@@ -74,7 +83,14 @@ class GenerativeModel:
                     )
             
             # Any other error
-            resp.raise_for_status()
+            try:
+                resp.raise_for_status()
+            except requests.exceptions.HTTPError as e:
+                log.warning(f"OpenRouter HTTP Error (attempt {attempt + 1}/{max_retries}): {e} - Response: {resp.text}")
+                if attempt < max_retries - 1:
+                    time.sleep(5)
+                    continue
+                raise
 
 def configure(api_key):
     pass
