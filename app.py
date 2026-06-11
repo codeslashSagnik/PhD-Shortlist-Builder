@@ -280,8 +280,7 @@ with st.sidebar:
     # ── Projects ──
     with st.expander("💡 Projects"):
         num_projects = st.number_input("Number of projects", min_value=0, max_value=6,
-                                        value=st.session_state["num_projects"], step=1,
-                                        key="num_projects")
+                                        step=1, key="num_projects")
         for i in range(int(num_projects)):
             st.markdown(f"**Project {i+1}**")
             if f"proj_name_{i}" not in st.session_state:
@@ -298,8 +297,7 @@ with st.sidebar:
     # ── Publications ──
     with st.expander("📝 Publications"):
         num_pubs = st.number_input("Number of publications", min_value=0, max_value=10,
-                                    value=st.session_state["num_pubs"], step=1,
-                                    key="num_pubs")
+                                    step=1, key="num_pubs")
         for i in range(int(num_pubs)):
             st.markdown(f"**Publication {i+1}**")
             for k, d in [(f"pub_title_{i}", ""), (f"pub_venue_{i}", ""), (f"pub_doi_{i}", "")]:
