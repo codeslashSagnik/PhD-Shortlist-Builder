@@ -26,7 +26,7 @@ log = get_logger(__name__)
 
 # Regex for a plausible academic email
 _EMAIL_RE = re.compile(
-    r"[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.(ac\.uk|edu|ca|org|net|com)",
+    r"[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.(?:ac\.uk|edu|ca|org|net|com)",
     re.IGNORECASE,
 )
 

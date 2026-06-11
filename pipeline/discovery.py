@@ -52,7 +52,7 @@ def _query_openalex(keyword: str, countries: List[str]) -> List[Dict]:
     # Map country names to OpenAlex country codes
     country_codes = {"UK": "GB", "Canada": "CA"}
     target_codes = [country_codes.get(c, c) for c in countries]
-    filter_str = "|".join(f"authorships.institutions.country_code:{code}" for code in target_codes)
+    filter_str = f"institutions.country_code:{'|'.join(target_codes)}"
 
     url = "https://api.openalex.org/works"
     params = {
@@ -105,7 +105,7 @@ def _query_openalex(keyword: str, countries: List[str]) -> List[Dict]:
 
             for inst in authorship.get("institutions", []):
                 inst_name = inst.get("display_name", "")
-                inst_country = inst.get("country_code", "").upper()
+                inst_country = (inst.get("country_code") or "").upper()
 
                 # Map back to canonical country name
                 country_map = {"GB": "UK", "CA": "Canada"}
@@ -358,6 +358,7 @@ def discover_candidates(signal: StudentSignal) -> List[Dict[str, Any]]:
             except Exception as e:
                 log.error("  [%s | '%s'] → ERROR: %s", source, kw, e)
 
+    all_candidates = [c for c in all_candidates if len(c.get("evidence", [])) > 0]
     log.info("Stage 2 | Total raw candidates collected: %d", len(all_candidates))
 
     # Cap to prevent memory issues

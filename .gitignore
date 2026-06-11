@@ -25,8 +25,15 @@ cache/nih/
 cache/scrape/
 cache/llm/
 cache/findaphd/
+cache/*.bak
+cache/*.dat
+cache/*.dir
 # Keep the cache directory itself (has .gitkeep)
 !cache/.gitkeep
+
+# ── Temporary test files ──────────────────────────────────────────────────────
+test_*.py
+scratch_*.py
 
 # ── Log files ─────────────────────────────────────────────────────────────────
 logs/*.log

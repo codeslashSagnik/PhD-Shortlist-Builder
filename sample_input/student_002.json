@@ -1,0 +1,64 @@
+{
+  "student_id": "student_002",
+  "personal": {
+    "name": "Arjun Mehta",
+    "nationality": "Indian",
+    "current_degree": "MSc Computer Science",
+    "current_institution": "University of Edinburgh",
+    "gpa": 3.8,
+    "level_applying_for": "PhD",
+    "student_level": "Masters"
+  },
+  "target": {
+    "countries": ["USA", "Canada"],
+    "intake": {
+      "semester": "Fall",
+      "year": 2025
+    },
+    "funding_required": true,
+    "open_to_self_funded": false
+  },
+  "research": {
+    "thesis_topic": "Efficient neural architecture search and model compression techniques for deploying deep learning on edge devices with constrained memory and compute",
+    "primary_area": "Machine Learning Systems",
+    "secondary_area": "Computer Architecture / Edge AI",
+    "discipline": "Computer Science"
+  },
+  "academic_background": {
+    "publications": [
+      {
+        "title": "Pruning Transformers for Edge Deployment: A Structured Sparsity Approach",
+        "venue": "NeurIPS Workshop on Efficient Natural Language and Speech Processing 2023",
+        "year": 2023,
+        "doi": "10.48550/arXiv.2312.00000"
+      }
+    ],
+    "projects": [
+      {
+        "name": "MobileNAS",
+        "description": "Implemented differentiable NAS to search efficient architectures for CIFAR-100 under 5ms latency constraint on Raspberry Pi 4. Achieved 91% accuracy with 3x fewer parameters than MobileNetV3.",
+        "year": 2023
+      },
+      {
+        "name": "Quantised BERT",
+        "description": "Applied 4-bit GPTQ quantisation to BERT-base for on-device sentiment analysis on ARM Cortex-M microcontrollers. 10x memory reduction with 2% accuracy loss.",
+        "year": 2024
+      }
+    ],
+    "relevant_coursework": [
+      "Machine Learning",
+      "Computer Architecture",
+      "Distributed Systems",
+      "Optimisation for Machine Learning",
+      "Probabilistic Modelling"
+    ],
+    "test_scores": {
+      "GRE": {
+        "verbal": 158,
+        "quant": 170,
+        "awa": 4.0
+      },
+      "TOEFL": 112
+    }
+  }
+}

@@ -26,20 +26,35 @@ _FORMATTER = logging.Formatter(
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 
-_file_handler = logging.FileHandler(_LOG_FILE, encoding="utf-8")
-_file_handler.setFormatter(_FORMATTER)
-_file_handler.setLevel(logging.DEBUG)
 
-_console_handler = logging.StreamHandler(sys.stdout)
-_console_handler.setFormatter(_FORMATTER)
-_console_handler.setLevel(logging.INFO)
+def _build_root_logger() -> logging.Logger:
+    """Build or retrieve the root phd_builder logger with correct handlers."""
+    root = logging.getLogger("phd_builder")
+    root.setLevel(logging.DEBUG)
 
-# Root logger — all child loggers inherit handlers
-_root = logging.getLogger("phd_builder")
-_root.setLevel(logging.DEBUG)
-if not _root.handlers:
-    _root.addHandler(_file_handler)
-    _root.addHandler(_console_handler)
+    # Check if a FileHandler already pointing to our log file exists
+    has_file_handler = any(
+        isinstance(h, logging.FileHandler) and h.baseFilename == str(_LOG_FILE.resolve())
+        for h in root.handlers
+    )
+    has_console_handler = any(isinstance(h, logging.StreamHandler) for h in root.handlers)
+
+    if not has_file_handler:
+        fh = logging.FileHandler(_LOG_FILE, encoding="utf-8")
+        fh.setFormatter(_FORMATTER)
+        fh.setLevel(logging.DEBUG)
+        root.addHandler(fh)
+
+    if not has_console_handler:
+        ch = logging.StreamHandler(sys.stdout)
+        ch.setFormatter(_FORMATTER)
+        ch.setLevel(logging.INFO)
+        root.addHandler(ch)
+
+    return root
+
+
+_root = _build_root_logger()
 
 
 def get_logger(name: str) -> logging.Logger:
@@ -57,3 +72,4 @@ def get_logger(name: str) -> logging.Logger:
 def get_log_file_path() -> Path:
     """Return the path to the current run's log file (useful for printing at end of run)."""
     return _LOG_FILE
+

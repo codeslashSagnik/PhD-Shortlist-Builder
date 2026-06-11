@@ -49,6 +49,8 @@ incorrectly drop these. A known false-negative category.
 **Concrete example:** A Semantic Scholar author named "James Chen" at UCL — no title in the metadata.
 Page scrape found: *"James Chen — PhD Student, supervised by Prof. [X]."* Dropped.
 
+**Inactive Researcher Flag:** If a candidate's most recent paper is older than 4 years, we flag them instead of dropping them entirely. We apply a 50% penalty to their final composite score in Stage 4. This sinks them to the bottom of the rankings while preserving coverage, as they might just have had a quiet publishing period but are still highly relevant.
+
 ---
 
 ## Problem 3 — Geographic Mismatch (Professors Not in Target Country)
@@ -127,23 +129,53 @@ ORCID as an optional enrichment when available.
 
 ---
 
-## Problem 6 — LLM Rate Limits on Free Tier
+## Problem 6 — LLM Rate Limits on Free Tier (OpenRouter/Gemini)
 
-**The problem:** Gemini 1.5 Flash free tier allows 15 requests/minute. With 300 verified candidates 
-needing domain relevance checks (Check 3) plus 50 candidates needing why-match generation (Stage 5), 
-a naive implementation would hit rate limits and fail mid-run.
+**The problem:** Free tier LLM APIs (like OpenRouter's Llama-3.3-70B or Gemini 1.5 Flash) have extremely aggressive rate limits (e.g. 1 request per 30 seconds). With 300 verified candidates originally needing domain relevance checks (Check 3), a naive implementation would take over 2.5 hours just to run verification.
 
 **How we solved it:**
-1. The **disk cache** means every LLM call is cached by its prompt hash. Re-runs are instant.
-2. The **rate limiter** (token bucket) wraps all API calls. It doesn't prevent rate limit errors 
-   but ensures we don't fire bursts of requests simultaneously.
-3. For Check 3, we short-circuit with heuristics before calling the LLM — only ambiguous cases 
-   reach the LLM call. Candidates with no abstract skip the LLM entirely.
-4. The `google-generativeai` SDK handles 429 retries internally with exponential backoff.
+1. **Removed all LLM calls from Stage 3**. Check 2 (Career) and Check 4 (Eligibility) were rewritten to use robust heuristics and exclusion lists exclusively.
+2. Check 3 (Domain) was converted to a 100% embedding-based check. The LLM fallback for ambiguous cases was removed entirely in favor of a tuned cosine similarity threshold.
+3. The **disk cache** ensures that the remaining LLM calls (Stage 1 extraction, Stage 5 generation) are cached by their prompt hash.
+4. The `utils.openrouter` wrapper respects the `Retry-After` HTTP headers to wait exactly the required time when limits are hit.
 
-**Known limitation:** On first run with a cold cache and 300+ candidates, Stage 3 can take 20+ 
-minutes due to rate limiting. This is unavoidable on the free tier. The cache makes all subsequent 
-runs fast.
+**Known limitation:** Stage 5 (Why-Match Generation) still requires up to 50 LLM calls for the top candidates. On a completely cold cache, this will still take time, but Stage 3 now processes hundreds of candidates in seconds.
+
+---
+
+## Problem 7 — Tuning the Domain Relevance Threshold (Check 3)
+
+**The problem:** Without an LLM to evaluate ambiguous research domains, the embedding cosine similarity score (using `all-MiniLM-L6-v2`) becomes the sole arbiter of whether a professor matches the student. If the cutoff is too high, we drop relevant professors (false negatives). If too low, we let in professors from different fields (false positives).
+
+**How we solved it:**
+- We ran a boundary analysis script (`test_stage3.py`) to examine candidates near the 0.40 mark.
+- At `0.40`, the model passed a paper about using LLMs for peer review (pure NLP, no health context), which is a false positive for a student who wants Clinical NLP for depression detection.
+- At `0.39`, the model dropped a paper about using ML on MRI scans for Major Depressive Disorder (clinical, but not text-based).
+- **Decision:** We raised the threshold to `0.45` to prioritize precision. A pure NLP person is a bad match. A pure MRI person is a bad match. We want candidates operating exactly at the intersection of text analysis and mental health. `0.45` enforces that higher standard.
+
+---
+
+## Problem 8 — Discovery Source Rate Limits & Blocks
+
+**The problem:** External academic and job board APIs have varying levels of stability and rate limits.
+- **FindAPhD:** We frequently encounter `403 Forbidden` blocks when scraping FindAPhD aggressively.
+- **Semantic Scholar:** The API imposes strict rate limits (`429 Client Error`) and frequently fails on concurrent or rapid queries.
+
+**How we solved it:**
+- **OpenAlex Resilience:** OpenAlex is significantly more permissive and stable, and returns an enormous amount of high-quality data. By treating OpenAlex as the primary discovery engine, we remain insulated from FindAPhD and Semantic Scholar failures.
+- **Graceful Degradation:** The discovery pipeline handles HTTP errors via `try/except` blocks and caches successful queries. When Semantic Scholar or FindAPhD fail, they return 0 candidates for that specific query rather than crashing the entire pipeline. OpenAlex alone provides more than enough candidates (often 1000+) to feed the funnel.
+
+**What we didn't solve (Known Limitations):** FindAPhD 403 blocks mean we occasionally miss open funded positions. With more time, we would implement a robust proxy rotation system or headless browser to bypass basic anti-scraping measures on FindAPhD.
+
+---
+
+## Problem 9 — Stage 5 LLM Generation Bottleneck
+
+**The problem:** Generating personalised "why_match" blurbs takes ~30 seconds per candidate due to free-tier LLM rate limits. Running this on all 200 ranked candidates would take over an hour.
+
+**How we solved it:** We set `TOP_N_FOR_WHY_MATCH = 50` (configurable via environment variable). Only the top 50 candidates receive a fully personalized LLM-generated blurb. The remaining candidates (ranks 51+) receive an empty string `""` for their `why_match` field but are still fully populated in the output JSON with their evidence, scores, and emails.
+
+**Trade-off chosen:** This dramatically speeds up the pipeline while guaranteeing the top 50 candidates—the ones the student will actually read and apply to—have high-quality, personalized blurbs.
 
 ---
 

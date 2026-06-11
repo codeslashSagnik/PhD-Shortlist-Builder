@@ -1,0 +1,57 @@
+{
+  "student_id": "student_003",
+  "personal": {
+    "name": "Sofia Reyes",
+    "nationality": "Mexican",
+    "current_degree": "BSc Electrical Engineering",
+    "current_institution": "UNAM Mexico City",
+    "gpa": 9.1,
+    "level_applying_for": "PhD",
+    "student_level": "Bachelors"
+  },
+  "target": {
+    "countries": ["UK", "Germany", "Netherlands"],
+    "intake": {
+      "semester": "Fall",
+      "year": 2026
+    },
+    "funding_required": true,
+    "open_to_self_funded": false
+  },
+  "research": {
+    "thesis_topic": "Robust multi-agent reinforcement learning for autonomous vehicle coordination in mixed traffic environments with incomplete information",
+    "primary_area": "Reinforcement Learning / Autonomous Systems",
+    "secondary_area": "Robotics / Cyber-Physical Systems",
+    "discipline": "Computer Science"
+  },
+  "academic_background": {
+    "publications": [],
+    "projects": [
+      {
+        "name": "MARL Traffic Simulator",
+        "description": "Built a multi-agent simulation environment in SUMO to train decentralised RL agents for intersection management. Used QMIX for cooperative reward sharing; reduced average wait time by 34% vs signal control.",
+        "year": 2024
+      },
+      {
+        "name": "Adversarial Robustness in Autonomous Driving",
+        "description": "Studied impact of adversarial patch attacks on YOLO-based object detection in self-driving car pipelines. Implemented adversarial training to improve robustness by 22%.",
+        "year": 2023
+      }
+    ],
+    "relevant_coursework": [
+      "Reinforcement Learning",
+      "Control Systems",
+      "Probability and Statistics",
+      "Robotics",
+      "Embedded Systems"
+    ],
+    "test_scores": {
+      "GRE": {
+        "verbal": 155,
+        "quant": 169,
+        "awa": 3.5
+      },
+      "IELTS": 7.0
+    }
+  }
+}

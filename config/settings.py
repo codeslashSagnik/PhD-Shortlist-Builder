@@ -17,17 +17,23 @@ load_dotenv(_PROJECT_ROOT / ".env")
 
 # ── API Keys ──────────────────────────────────────────────────────────────────
 GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
+OPENROUTER_API_KEY: str = os.getenv("OPENROUTER_API_KEY", "")
 SEMANTIC_SCHOLAR_API_KEY: str = os.getenv("SEMANTIC_SCHOLAR_API_KEY", "")  # optional — raises rate limit
 
 # ── Gemini Model ──────────────────────────────────────────────────────────────
-GEMINI_MODEL: str = "gemini-1.5-flash"          # free tier model
+GEMINI_MODEL: str = "openrouter/free"          # free tier model
 GEMINI_TEMPERATURE: float = 0.1                  # low temp for factual extraction
 
 # ── Pipeline Limits ───────────────────────────────────────────────────────────
 MAX_CANDIDATES_DISCOVERY: int = 1000   # cap on raw pool from Stage 2
 MAX_CANDIDATES_AFTER_FILTER: int = 300 # cap on verified pool from Stage 3
 MAX_CANDIDATES_RANKED: int = 200       # cap on scored output from Stage 4
-TOP_N_FOR_WHY_MATCH: int = 50          # how many get the LLM why-match blurb
+import os
+TOP_N_FOR_WHY_MATCH: int = int(os.getenv("TOP_N_FOR_WHY_MATCH", "50")) # how many get the LLM why-match blurb
+
+# ── Domain Similarity Thresholds (Stage 3) ────────────────────────────────────
+DOMAIN_SIMILARITY_MIN_THRESHOLD: float = 0.3
+DOMAIN_SIMILARITY_MAX_THRESHOLD: float = 0.6
 
 # ── Scoring Weights ───────────────────────────────────────────────────────────
 WEIGHT_RESEARCH_OVERLAP: float = 0.40  # embedding cosine similarity

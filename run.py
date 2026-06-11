@@ -50,10 +50,10 @@ def load_profile(profile_path: str) -> dict:
     return profile
 
 
-def run_pipeline(profile_path: str) -> dict:
+def run_pipeline(profile_path: str = None, profile_dict: dict = None) -> dict:
     """
     Execute the full 5-stage pipeline end-to-end.
-
+    Accepts either a path to a JSON file or a loaded dictionary.
     Returns the final output dict.
     """
     pipeline_start = time.time()
@@ -61,12 +61,18 @@ def run_pipeline(profile_path: str) -> dict:
     log.info("╔══════════════════════════════════════════════════════╗")
     log.info("║         PhD SHORTLIST BUILDER — Pipeline Start       ║")
     log.info("╠══════════════════════════════════════════════════════╣")
-    log.info("║  Profile : %-42s ║", Path(profile_path).name)
+    
+    if profile_dict is not None:
+        profile = profile_dict
+        log.info("║  Profile : %-41s ║", "In-memory dictionary")
+    elif profile_path is not None:
+        profile = load_profile(profile_path)
+        log.info("║  Profile : %-41s ║", Path(profile_path).name)
+    else:
+        log.error("Must provide either profile_path or profile_dict")
+        sys.exit(1)
     log.info("║  Log     : %-42s ║", get_log_file_path().name)
     log.info("╚══════════════════════════════════════════════════════╝")
-
-    # ── Load profile ──────────────────────────────────────────────────────────
-    profile = load_profile(profile_path)
 
     # ── Stage 1: Profile Parser ───────────────────────────────────────────────
     t0 = time.time()

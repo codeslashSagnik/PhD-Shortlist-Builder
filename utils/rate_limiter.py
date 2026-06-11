@@ -21,7 +21,7 @@ log = get_logger(__name__)
 # Configured limits per data source (requests per second)
 _API_LIMITS: Dict[str, float] = {
     "openalex":        10.0,   # OpenAlex allows ~10 req/sec
-    "semantic_scholar": 1.0,   # Semantic Scholar: ~1 req/sec without API key
+    "semantic_scholar": 0.33,  # Semantic Scholar: strict without API key
     "nih":              5.0,
     "findaphd":         0.5,   # Scraping — be polite
     "scholar":          0.2,   # Google Scholar — very conservative
@@ -54,16 +54,15 @@ class TokenBucketLimiter:
 
     def wait(self) -> None:
         """Block until a request token is available, then consume one."""
-        while True:
-            with self._lock:
-                self._refill()
-                if self.tokens >= 1.0:
-                    self.tokens -= 1.0
-                    return
-                # Calculate how long until next token
-                wait_time = (1.0 - self.tokens) / self.rate
-            log.debug("Rate limiter [%s] sleeping %.2fs", self.name, wait_time)
-            time.sleep(wait_time)
+        with self._lock:
+            now = time.monotonic()
+            elapsed = now - self.last_refill
+            needed_sleep = (1.0 / self.rate) - elapsed
+            if needed_sleep > 0:
+                time.sleep(needed_sleep)
+                self.last_refill = time.monotonic()
+            else:
+                self.last_refill = now
 
 
 # Singleton registry of limiters

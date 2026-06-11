@@ -13,7 +13,7 @@ import json
 import time
 from typing import Any, Dict, List
 
-import google.generativeai as genai
+import utils.openrouter as genai
 
 from config.settings import GEMINI_API_KEY, GEMINI_MODEL, GEMINI_TEMPERATURE
 from models.student_signal import StudentSignal, ResearchKeywords, TargetConstraints, SoftSignals
@@ -65,11 +65,11 @@ Return ONLY valid JSON matching this exact schema (no markdown, no explanation):
 STUDENT PROFILE:
 ---
 Thesis topic: {thesis_topic}
-Research keywords (raw): {keywords}
-Resume text: {resume_text}
-Intro call notes: {call_notes}
+Primary area: {primary_area}
+Secondary area: {secondary_area}
 Projects: {projects}
 Publications: {publications}
+Relevant coursework: {coursework}
 ---
 """
 
@@ -77,24 +77,25 @@ Publications: {publications}
 def _extract_via_llm(model: genai.GenerativeModel, profile: Dict[str, Any]) -> Dict[str, Any]:
     """Call Gemini to extract structured signals from free-text fields."""
     research = profile.get("research", {})
-    personal = profile.get("personal", {})
+    background = profile.get("academic_background", {})
 
     projects_text = "\n".join(
         f"- {p['name']}: {p['description']}"
-        for p in profile.get("academic_background", {}).get("projects", [])
+        for p in background.get("projects", [])
     )
     pubs_text = "\n".join(
         f"- {p['title']} ({p['year']})"
-        for p in profile.get("academic_background", {}).get("publications", [])
+        for p in background.get("publications", [])
     )
+    coursework_text = ", ".join(background.get("relevant_coursework", []))
 
     prompt = _EXTRACTION_PROMPT.format(
         thesis_topic=research.get("thesis_topic", ""),
-        keywords=", ".join(research.get("keywords", [])),
-        resume_text=profile.get("resume_text", "")[:3000],  # cap to save tokens
-        call_notes=profile.get("intro_call_notes", "")[:2000],
+        primary_area=research.get("primary_area", ""),
+        secondary_area=research.get("secondary_area", ""),
         projects=projects_text,
         publications=pubs_text,
+        coursework=coursework_text,
     )
 
     # Cache key = hash of the prompt

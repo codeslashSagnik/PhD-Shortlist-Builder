@@ -258,6 +258,14 @@ def score_and_rank(
             + WEIGHT_COUNTRY_QUALITY * s_country
         )
 
+        # Apply penalty for inactive researchers flagged in Stage 2
+        if candidate.get("flag_inactive_researcher"):
+            composite *= 0.5  # Halve the final score
+
+        # Apply penalty for missing institution — unverifiable affiliation
+        if not candidate.get("institution", "").strip():
+            composite *= 0.4  # Heavy penalty: cannot confirm country/institution
+
         # QS rank + tier
         qs_rank = _get_qs_rank(candidate)
         tier = _assign_tier(qs_rank, composite)

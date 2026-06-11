@@ -1,0 +1,64 @@
+{
+  "student_id": "student_004",
+  "personal": {
+    "name": "Hamid Al-Farsi",
+    "nationality": "Omani",
+    "current_degree": "MSc Bioinformatics",
+    "current_institution": "King's College London",
+    "gpa": 3.7,
+    "level_applying_for": "PhD",
+    "student_level": "Masters"
+  },
+  "target": {
+    "countries": ["UK", "Canada", "Australia"],
+    "intake": {
+      "semester": "Fall",
+      "year": 2025
+    },
+    "funding_required": true,
+    "open_to_self_funded": false
+  },
+  "research": {
+    "thesis_topic": "Graph neural network models for drug-target interaction prediction and polypharmacy side-effect discovery using large-scale biomedical knowledge graphs",
+    "primary_area": "Computational Biology / Bioinformatics",
+    "secondary_area": "Graph Neural Networks / Drug Discovery",
+    "discipline": "Computer Science"
+  },
+  "academic_background": {
+    "publications": [
+      {
+        "title": "Predicting Drug-Drug Interactions with Heterogeneous Biomedical Knowledge Graphs",
+        "venue": "Bioinformatics (Oxford) 2024",
+        "year": 2024,
+        "doi": "10.1093/bioinformatics/btae123"
+      }
+    ],
+    "projects": [
+      {
+        "name": "KG-DrugNet",
+        "description": "Implemented a relational GNN on a biomedical KG (Hetionet + DrugBank) to predict novel drug-target pairs. AUC 0.91 on held-out test, identified 3 potential repurposable candidates for Alzheimer's disease.",
+        "year": 2024
+      },
+      {
+        "name": "Protein Function Annotation with Graph Attention",
+        "description": "Used Graph Attention Networks (GAT) on protein interaction networks from STRING DB to predict GO term annotations. Outperformed DeepGO on sparse protein families.",
+        "year": 2023
+      }
+    ],
+    "relevant_coursework": [
+      "Bioinformatics Algorithms",
+      "Machine Learning for Biomedicine",
+      "Graph Neural Networks",
+      "Structural Bioinformatics",
+      "Genomics and Proteomics"
+    ],
+    "test_scores": {
+      "GRE": {
+        "verbal": 159,
+        "quant": 165,
+        "awa": 4.0
+      },
+      "IELTS": 7.5
+    }
+  }
+}

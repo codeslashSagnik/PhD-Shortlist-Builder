@@ -15,7 +15,7 @@ import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-import google.generativeai as genai
+import utils.openrouter as genai
 
 from models.student_signal import StudentSignal
 from utils.logger import get_logger
@@ -67,8 +67,65 @@ Student's thesis topic: {thesis_topic}
 Student's key projects/papers: {student_work}
 Student's research keywords: {keywords}
 
-Write the why_match blurb now (2–3 sentences only):
+Write the why_match blurb now (2–3 sentences only).
+You MUST output a valid JSON object with exactly one key "why_match".
 """
+
+def _template_why_match(candidate: Dict, signal: StudentSignal) -> str:
+    """
+    Template-based why_match fallback when LLM is unavailable.
+    Uses the professor's actual paper titles/abstracts for specificity.
+    """
+    name = candidate.get("name", "This researcher")
+    evidence = candidate.get("evidence", [])
+    keywords = signal.research.primary_keywords[:3]
+    thesis = signal.research.thesis_topic
+
+    # Find the best paper (prefer one with an abstract)
+    best_paper = None
+    for ev in evidence[:5]:
+        if ev.get("abstract"):
+            best_paper = ev
+            break
+    if not best_paper and evidence:
+        best_paper = evidence[0]
+
+    if best_paper:
+        paper_title = best_paper.get("title", "")
+        abstract = best_paper.get("abstract", "")
+        year = best_paper.get("year", "")
+
+        # Extract a key phrase from the abstract (first sentence)
+        abstract_snippet = ""
+        if abstract:
+            first_sentence = abstract.split(".")[0]
+            if len(first_sentence) > 30:
+                abstract_snippet = first_sentence[:200]
+
+        kw_str = " and ".join(keywords[:2]) if keywords else "mental health NLP"
+
+        if abstract_snippet:
+            return (
+                f"{name}'s work on '{paper_title}' ({year}) directly addresses {kw_str}, "
+                f"which is the core of {signal.student_name}'s research agenda. "
+                f"Specifically, their research explores {abstract_snippet.lower()}, "
+                f"aligning with {signal.student_name}'s thesis on {thesis[:120]}."
+            )
+        else:
+            return (
+                f"{name}'s publication '{paper_title}' ({year}) places their research "
+                f"squarely within {kw_str} — the primary domain of {signal.student_name}'s work. "
+                f"Their focus on {paper_title.lower()} is a direct complement to "
+                f"{signal.student_name}'s thesis: {thesis[:120]}."
+            )
+    else:
+        kw_str = ", ".join(keywords[:3]) if keywords else "mental health informatics"
+        return (
+            f"{name}'s research profile demonstrates strong alignment with {kw_str}, "
+            f"which form the foundation of {signal.student_name}'s PhD thesis. "
+            f"Their work in this space makes them a relevant supervisor candidate for "
+            f"{signal.student_name}'s proposed research on {thesis[:120]}."
+        )
 
 
 def _generate_why_match(
@@ -108,21 +165,41 @@ def _generate_why_match(
         keywords=", ".join(signal.research.primary_keywords[:5]),
     )
 
-    cached = cache_get("llm", f"why_match|{prompt[:200]}")
+    # Cache key must be unique per professor — use name + first paper title
+    first_paper_title = ""
+    for ev in candidate.get("evidence", [])[:1]:
+        first_paper_title = ev.get("title", "")
+    cache_key = f"why_match|{candidate.get('name', '')}|{first_paper_title}|{signal.student_id}"
+
+    cached = cache_get("llm", cache_key)
     if cached:
-        return cached.get("blurb", "")
+        cached_blurb = cached.get("blurb", "")
+        if cached_blurb:
+            log.info("  Cache hit for why_match: %s", candidate.get('name', ''))
+            return cached_blurb
 
     try:
+        log.info("  Calling LLM for why_match: %s", candidate.get('name', ''))
         response = model.generate_content(prompt)
-        blurb = response.text.strip()
-        cache_set("llm", f"why_match|{prompt[:200]}", {"blurb": blurb})
-        return blurb
+        try:
+            blurb_json = json.loads(response.text)
+            blurb = blurb_json.get("why_match", "")
+        except Exception:
+            # LLM returned plain text instead of JSON — use it directly
+            blurb = response.text.strip()
+        if blurb:
+            cache_set("llm", cache_key, {"blurb": blurb})
+            log.info("  LLM blurb generated for: %s", candidate.get('name', ''))
+            return blurb
     except Exception as e:
-        log.warning("Why-match generation failed for %s: %s", candidate.get("name"), e)
-        return (
-            f"{candidate.get('name', 'This professor')} works on topics closely aligned "
-            f"with {signal.student_name}'s research in {signal.research.primary_area}."
-        )
+        log.warning("Why-match LLM failed for %s: %s — using template fallback", candidate.get("name"), e)
+
+    # Template-based fallback when LLM is unavailable
+    blurb = _template_why_match(candidate, signal)
+    cache_set("llm", cache_key, {"blurb": blurb})
+    log.info("  Template fallback used for: %s", candidate.get('name', ''))
+    return blurb
+
 
 
 # ── Output schema assembly ─────────────────────────────────────────────────────
@@ -142,9 +219,12 @@ def _format_candidate_output(
             "title": ev.get("title", ""),
             "year": ev.get("year", 0),
         }
-        if ev.get("doi"):
-            entry["doi"] = ev["doi"]
-            entry["url"] = f"https://doi.org/{ev['doi']}"
+        doi = ev.get("doi", "")
+        if doi:
+            # Normalise: strip any https://doi.org/ prefix already in the field
+            clean_doi = doi.replace("https://doi.org/", "").replace("http://doi.org/", "")
+            entry["doi"] = clean_doi
+            entry["url"] = f"https://doi.org/{clean_doi}"
         elif ev.get("url"):
             entry["url"] = ev["url"]
         evidence_out.append(entry)
@@ -206,26 +286,29 @@ def generate_output(
     log.info("Generating why_match blurbs for top %d candidates...", len(top_candidates))
 
     output_candidates = []
-    for i, candidate in enumerate(top_candidates):
+    for i, candidate in enumerate(ranked_candidates):
         name = candidate.get("name", "Unknown")
-        log.info("  [%d/%d] Generating blurb for: %s", i + 1, len(top_candidates), name)
+        
+        # Only do LLM blurbs and email discovery for the top N
+        if i < TOP_N_FOR_WHY_MATCH:
+            log.info("  [%d/%d] Generating blurb for: %s", i + 1, TOP_N_FOR_WHY_MATCH, name)
+            why_match = _generate_why_match(model, candidate, signal)
 
-        # Why-match blurb
-        why_match = _generate_why_match(model, candidate, signal)
-
-        # Email discovery (best-effort)
-        paper_urls = [
-            ev.get("url", "") for ev in candidate.get("evidence", []) if ev.get("url")
-        ]
-        if not candidate.get("email"):
-            email = find_email(
-                name=name,
-                institution=candidate.get("institution", ""),
-                homepage=candidate.get("homepage") or None,
-                paper_urls=paper_urls[:3],
-            )
-            if email:
-                candidate["email"] = email
+            # Email discovery (best-effort)
+            paper_urls = [
+                ev.get("url", "") for ev in candidate.get("evidence", []) if ev.get("url")
+            ]
+            if not candidate.get("email"):
+                email = find_email(
+                    name=name,
+                    institution=candidate.get("institution", ""),
+                    homepage=candidate.get("homepage") or None,
+                    paper_urls=paper_urls[:3],
+                )
+                if email:
+                    candidate["email"] = email
+        else:
+            why_match = ""
 
         formatted = _format_candidate_output(candidate, why_match, rank=i + 1)
         output_candidates.append(formatted)
