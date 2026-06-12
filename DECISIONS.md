@@ -129,15 +129,15 @@ ORCID as an optional enrichment when available.
 
 ---
 
-## Problem 6 — LLM Rate Limits on Free Tier (OpenRouter/Gemini)
+## Problem 6 — LLM Rate Limits on Free Tier (Google Gemini)
 
-**The problem:** Free tier LLM APIs (like OpenRouter's Llama-3.3-70B or Gemini 1.5 Flash) have extremely aggressive rate limits (e.g. 1 request per 30 seconds). With 300 verified candidates originally needing domain relevance checks (Check 3), a naive implementation would take over 2.5 hours just to run verification.
+**The problem:** Free tier LLM APIs (like Google Gemini) have aggressive rate limits. With 300 verified candidates originally needing domain relevance checks (Check 3), a naive implementation would take over 2.5 hours just to run verification.
 
 **How we solved it:**
 1. **Removed all LLM calls from Stage 3**. Check 2 (Career) and Check 4 (Eligibility) were rewritten to use robust heuristics and exclusion lists exclusively.
 2. Check 3 (Domain) was converted to a 100% embedding-based check. The LLM fallback for ambiguous cases was removed entirely in favor of a tuned cosine similarity threshold.
 3. The **disk cache** ensures that the remaining LLM calls (Stage 1 extraction, Stage 5 generation) are cached by their prompt hash.
-4. The `utils.openrouter` wrapper respects the `Retry-After` HTTP headers to wait exactly the required time when limits are hit.
+4. The `utils.gemini` wrapper handles rate limits with exponential backoff.
 
 **Known limitation:** Stage 5 (Why-Match Generation) still requires up to 50 LLM calls for the top candidates. On a completely cold cache, this will still take time, but Stage 3 now processes hundreds of candidates in seconds.
 

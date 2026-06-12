@@ -17,11 +17,10 @@ load_dotenv(_PROJECT_ROOT / ".env")
 
 # ── API Keys ──────────────────────────────────────────────────────────────────
 GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
-OPENROUTER_API_KEY: str = os.getenv("OPENROUTER_API_KEY", "")
 SEMANTIC_SCHOLAR_API_KEY: str = os.getenv("SEMANTIC_SCHOLAR_API_KEY", "")  # optional — raises rate limit
 
 # ── Gemini Model ──────────────────────────────────────────────────────────────
-GEMINI_MODEL: str = "openrouter/free"          # free tier model
+GEMINI_MODEL: str = "gemini-2.5-flash"         # free tier model
 GEMINI_TEMPERATURE: float = 0.1                  # low temp for factual extraction
 
 # ── Pipeline Limits ───────────────────────────────────────────────────────────

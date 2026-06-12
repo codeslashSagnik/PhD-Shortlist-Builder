@@ -41,7 +41,7 @@ PhD Shortlist Builder/
 │   ├── rate_limiter.py    Token-bucket rate limiter per API
 │   ├── deduplicator.py    Merges duplicate candidates across sources
 │   ├── email_finder.py    Best-effort email discovery from faculty pages
-│   └── openrouter.py      OpenRouter LLM wrapper with semantic cache-busting
+│   └── gemini.py          Google Gemini SDK wrapper with rate limit handling
 │
 ├── config/
 │   └── settings.py        All tunable parameters, weights, API keys from .env
@@ -49,7 +49,7 @@ PhD Shortlist Builder/
 ├── app.py                 Streamlit Web UI Entry Point (Main)
 ├── run.py                 CLI Entry point
 ├── requirements.txt
-├── .env.example           Copy to .env and fill in your OpenRouter key
+├── .env.example           Copy to .env and fill in your Gemini API key
 ├── schema.md              Output JSON field documentation
 ├── DECISIONS.md           Design decisions and data quality trade-offs
 └── README.md              This file
@@ -83,20 +83,20 @@ pip install -r requirements.txt
 ```
 
 ### 4. Configure API Keys
-The system relies on OpenRouter's free API tier to power the LLM stages.
+The system relies on Google's free Gemini API tier to power the LLM stages.
 
-1. Go to [https://openrouter.ai/keys](https://openrouter.ai/keys)
+1. Go to [https://aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey)
 2. Sign in and click **Create Key**.
 3. Copy the `.env.example` file to `.env`:
    ```bash
    copy .env.example .env       # Windows
    cp .env.example .env         # macOS/Linux
    ```
-4. Open `.env` and paste your OpenRouter key:
+4. Open `.env` and paste your Gemini key:
    ```env
-   OPENROUTER_API_KEY=sk-or-v1-...
+   GEMINI_API_KEY=your_gemini_api_key_here
    ```
-   *(Note: The system is configured by default to strictly use `openrouter/free` models to ensure it costs $0).*
+   *(Note: The system is configured by default to use `gemini-2.5-flash` which is highly performant and free).*
 
 ---
 
@@ -152,7 +152,7 @@ On a second run with the exact same input (cache warm): **~15–30 seconds**.
 | [OpenAlex](https://openalex.org) | Papers, authors, institutions, countries | ✅ Yes | 10 req/s (polite pool) |
 | [Semantic Scholar](https://api.semanticscholar.org) | Papers, authors, abstracts | ✅ Yes (1 req/s) | Higher with free API key |
 | [FindAPhD.com](https://www.findaphd.com) | Open PhD positions, eligibility | ✅ Yes (scraping) | 0.5 req/s (polite) |
-| [OpenRouter API](https://openrouter.ai) | LLM extraction, verification, generation | ✅ Free tier | ~10 req/min |
+| [Google Gemini API](https://aistudio.google.com/app/apikey) | LLM extraction, verification, generation | ✅ Free tier | ~15 req/min |
 | [sentence-transformers](https://sbert.net) | Local embeddings (all-MiniLM-L6-v2) | ✅ Fully local | Unlimited |
 
 **Total Operating Cost: £0 / $0**
@@ -165,12 +165,12 @@ On a second run with the exact same input (cache warm): **~15–30 seconds**.
 2. **Semantic Scholar missing country info** — S2 author profiles don't always have institution country. Country is inferred from faculty page scrape in Stage 3.
 3. **Email coverage ~60%** — Many faculty pages don't expose emails in machine-readable form (obfuscated as images or JS-rendered). We never guess.
 4. **FindAPhD positions may be stale** — Position ads are not always updated when filled. Treat `open_position: true` as a strong signal, not a guarantee.
-5. **LLM rate limits** — The free OpenRouter API can sometimes encounter 429 Rate Limits. The pipeline will automatically retry and backoff. If it ultimately fails, the Streamlit UI will catch the error safely.
+5. **LLM rate limits** — The free Gemini API can sometimes encounter 429 Rate Limits. The pipeline will automatically retry and backoff. If it ultimately fails, the Streamlit UI will catch the error safely.
 6. **QS ranking coverage** — Only major UK and Canada universities are in the embedded ranking table. Unranked institutions default to "safety" tier based on score.
 
 ---
 
 ## Logs & Cache
 
-- **Logs:** Every run creates a timestamped log at `logs/pipeline_YYYYMMDD_HHMMSS.log` capturing every pipeline decision, check pass/fail, and OpenRouter API attempt.
+- **Logs:** Every run creates a timestamped log at `logs/pipeline_YYYYMMDD_HHMMSS.log` capturing every pipeline decision, check pass/fail, and Gemini API attempt.
 - **Cache:** The system caches API responses in the `cache/` directory using SHA-256 hashes of the prompts. This prevents duplicate API calls and saves time on subsequent runs. To clear the cache, delete the `cache/` folder or run the CLI with `--clear-cache`.

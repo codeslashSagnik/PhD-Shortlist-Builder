@@ -345,7 +345,7 @@ if run_button:
                 st.success("✅ Shortlist generated!")
             except Exception as e:
                 st.error(f"❌ Pipeline failed: {e}")
-                st.info("Check the terminal logs for more details. If you hit an OpenRouter rate limit, please wait a minute and try again.")
+                st.info("Check the terminal logs for more details. If you hit a Gemini API rate limit, please wait a minute and try again.")
 
 if "output" in st.session_state:
     output = st.session_state["output"]

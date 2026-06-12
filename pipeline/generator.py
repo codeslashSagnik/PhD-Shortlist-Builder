@@ -15,7 +15,7 @@ import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-import utils.openrouter as genai
+import utils.gemini as genai
 
 from models.student_signal import StudentSignal
 from utils.logger import get_logger

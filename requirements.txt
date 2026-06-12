@@ -4,7 +4,7 @@ beautifulsoup4==4.12.3
 lxml==5.1.0
 
 # Google Gemini (free tier)
-google-generativeai==0.5.4
+google-genai>=0.1.0
 
 # Local embeddings — no API key needed
 sentence-transformers==2.7.0

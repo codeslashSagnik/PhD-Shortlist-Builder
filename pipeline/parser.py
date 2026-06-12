@@ -13,7 +13,7 @@ import json
 import time
 from typing import Any, Dict, List
 
-import utils.openrouter as genai
+import utils.gemini as genai
 
 from config.settings import GEMINI_API_KEY, GEMINI_MODEL, GEMINI_TEMPERATURE
 from models.student_signal import StudentSignal, ResearchKeywords, TargetConstraints, SoftSignals

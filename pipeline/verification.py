@@ -21,9 +21,9 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import requests
 from bs4 import BeautifulSoup
-import utils.openrouter as genai
+import utils.gemini as genai
 from sentence_transformers import SentenceTransformer, util
-from utils.openrouter import ResourceExhausted
+from utils.gemini import ResourceExhausted
 
 from models.student_signal import StudentSignal
 from utils.logger import get_logger
