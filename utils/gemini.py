@@ -100,8 +100,20 @@ class GenerativeModel:
 
         for attempt in range(max_retries):
             try:
+                current_model = self.model_name
+                # Fallback to lighter models on repeated failures
+                if attempt == 2:
+                    current_model = "gemini-2.5-flash-lite"
+                    log.warning("Falling back to %s due to persistent errors", current_model)
+                elif attempt == 3:
+                    current_model = "gemini-2.0-flash"
+                    log.warning("Falling back to %s due to persistent errors", current_model)
+                elif attempt == 4:
+                    current_model = "gemini-1.5-flash"
+                    log.warning("Falling back to %s due to persistent errors", current_model)
+
                 response = _client.models.generate_content(
-                    model=self.model_name,
+                    model=current_model,
                     contents=prompt,
                     config=self._config
                 )
